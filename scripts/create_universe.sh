@@ -5,7 +5,11 @@
 # This script configures a list of nodes and creates a universe.
 #
 # Usage:
-#   create_universe.sh <rf> <space separated list of ips> <ssh user> <ssh-key file>
+#   create_universe.sh <rf> <config ips> <ssh ips> <ssh user> <ssh-key file>
+#       <config ips> : space separated set of ips the nodes should talk to
+#                      each other using
+#       <ssh ips>    : space separated set of ips used to ssh to the nodes in
+#                      order to configure them
 #
 ###############################################################################
 
@@ -14,13 +18,17 @@
 RF=$1
 echo "Replication factor: $RF"
 
-# Get the list of nodes.
+# Get the list of nodes (ips) used for intra-cluster communication.
 NODES=$2
 echo "Creating universe with nodes: [$NODES]"
 
+# Get the list of ips to ssh to the corresponding nodes.
+SSH_IPS=$3
+echo "Connecting to nodes with ips: [$SSH_IPS]"
+
 # Get the credentials to connect to the nodes.
-SSH_USER=$3
-SSH_KEY_PATH=$4
+SSH_USER=$4
+SSH_KEY_PATH=$5
 
 YB_HOME=/home/ec2-user/yugabyte-db
 YB_MASTER_ADDRESSES=""
@@ -58,7 +66,7 @@ echo "Master addresses: $YB_MASTER_ADDRESSES"
 echo "Finalizing configuration..."
 MASTER_CONF_CMD="echo '--master_addresses=${YB_MASTER_ADDRESSES}' >> ${YB_HOME}/master/conf/server.conf"
 TSERVER_CONF_CMD="echo '--tserver_master_addrs=${YB_MASTER_ADDRESSES}' >> ${YB_HOME}/tserver/conf/server.conf"
-for node in $NODES
+for node in $SSH_IPS
 do
   ssh -o "StrictHostKeyChecking no" -i ${SSH_KEY_PATH} ${SSH_USER}@$node "$MASTER_CONF_CMD ; $TSERVER_CONF_CMD"
 done
@@ -73,7 +81,7 @@ MASTER_EXE=${YB_HOME}/master/bin/yb-master
 MASTER_OUT=${YB_HOME}/master/master.out
 MASTER_ERR=${YB_HOME}/master/master.err
 MASTER_START_CMD="nohup ${MASTER_EXE} --flagfile ${YB_HOME}/master/conf/server.conf >>${MASTER_OUT} 2>>${MASTER_ERR} </dev/null &"
-for node in $NODES
+for node in $SSH_IPS
 do
   ssh -o "StrictHostKeyChecking no" -i ${SSH_KEY_PATH} ${SSH_USER}@$node "$MASTER_START_CMD"
 done
@@ -88,7 +96,7 @@ TSERVER_EXE=${YB_HOME}/tserver/bin/yb-tserver
 TSERVER_OUT=${YB_HOME}/tserver/tserver.out
 TSERVER_ERR=${YB_HOME}/tserver/tserver.err
 TSERVER_START_CMD="nohup ${TSERVER_EXE} --flagfile ${YB_HOME}/tserver/conf/server.conf >>${TSERVER_OUT} 2>>${TSERVER_ERR} </dev/null &"
-for node in $NODES
+for node in $SSH_IPS
 do
   ssh -o "StrictHostKeyChecking no" -i ${SSH_KEY_PATH} ${SSH_USER}@$node "$TSERVER_START_CMD"
 done

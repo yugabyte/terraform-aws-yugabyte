@@ -78,6 +78,12 @@ variable "subnet_ids" {
   type        = "list"
 }
 
+variable "use_public_ip_for_ssh" {
+  description = "Flag to control use of public or private ips for ssh."
+  default     = "true"
+  type        = "string"
+}
+
 variable "vpc_id" {
   description = "The VPC ID to create the security groups in."
   type        = "string"

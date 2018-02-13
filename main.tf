@@ -191,6 +191,11 @@ resource "aws_instance" "yugabyte_nodes" {
 #
 #########################################################
 
+locals {
+  ssh_ip_list="${var.use_public_ip_for_ssh == "true" ? join(" ", aws_instance.yugabyte_nodes.*.public_ip) : join(" ", aws_instance.yugabyte_nodes.*.private_ip)}"
+  config_ip_list="${join(" ", aws_instance.yugabyte_nodes.*.private_ip)}"
+}
+
 resource "null_resource" "create_yugabyte_universe" {
 
   # Execute after the nodes are provisioned and the software installed.
@@ -198,6 +203,6 @@ resource "null_resource" "create_yugabyte_universe" {
 
   provisioner "local-exec" {
     # Bootstrap script called with private_ip of each node in the clutser
-    command = "${path.module}/scripts/create_universe.sh ${var.replication_factor} '${join(" ", aws_instance.yugabyte_nodes.*.private_ip)}' ec2-user ${var.ssh_key_path}"
+    command = "${path.module}/scripts/create_universe.sh ${var.replication_factor} '${local.config_ip_list}' '${local.ssh_ip_list}' ec2-user ${var.ssh_key_path}"
   }
 }
