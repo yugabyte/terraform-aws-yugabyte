@@ -6,8 +6,8 @@
 #
 # Usage:
 #   create_universe.sh <rf> <config ips> <ssh ips> <ssh user> <ssh-key file>
-#       <config ips> : space separated set of ips the nodes should talk to
-#                      each other using
+#       <config ips> : space separated set of ips the nodes should use to talk to
+#                      each other
 #       <ssh ips>    : space separated set of ips used to ssh to the nodes in
 #                      order to configure them
 #
@@ -32,9 +32,8 @@ SSH_KEY_PATH=$5
 
 YB_HOME=/home/ec2-user/yugabyte-db
 YB_MASTER_ADDRESSES=""
-MASTER_NODES=""
 idx=0
-num_masters_added=0
+master_ips=""
 
 
 ###############################################################################
@@ -47,7 +46,7 @@ do
   	  YB_MASTER_ADDRESSES="$YB_MASTER_ADDRESSES,"
   	fi
     YB_MASTER_ADDRESSES="$YB_MASTER_ADDRESSES$node:7100"
-    MASTER_NODES="$MASTER_NODES $node"
+    master_ips="$master_ips $node"
   fi
   idx=`expr $idx + 1`
 done
@@ -76,12 +75,11 @@ done
 # Start the masters.
 ###############################################################################
 echo "Starting masters..."
-MASTER_CONF_CMD="echo '--master_addresses=${YB_MASTER_ADDRESSES}' >> ${YB_HOME}/master/conf/server.conf"
 MASTER_EXE=${YB_HOME}/master/bin/yb-master
 MASTER_OUT=${YB_HOME}/master/master.out
 MASTER_ERR=${YB_HOME}/master/master.err
 MASTER_START_CMD="nohup ${MASTER_EXE} --flagfile ${YB_HOME}/master/conf/server.conf >>${MASTER_OUT} 2>>${MASTER_ERR} </dev/null &"
-for node in $SSH_IPS
+for node in $master_ips
 do
   ssh -o "StrictHostKeyChecking no" -i ${SSH_KEY_PATH} ${SSH_USER}@$node "$MASTER_START_CMD"
 done
