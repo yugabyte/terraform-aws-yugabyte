@@ -7,7 +7,7 @@
 ###############################################################################
 
 YB_HOME=/home/ec2-user/yugabyte-db
-YB_VERSION=0.9.4.0
+YB_VERSION=0.9.5.0
 YB_PACKAGE_URL="https://downloads.yugabyte.com/yugabyte-ce-${YB_VERSION}-linux.tar.gz"
 
 ###############################################################################
