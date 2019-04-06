@@ -79,6 +79,12 @@ resource "aws_security_group" "yugabyte" {
     protocol  = "tcp"
     self      = true
   }
+  ingress {
+    from_port = 5433
+    to_port   = 5433
+    protocol  = "tcp"
+    self      = true
+  }
   lifecycle {
     create_before_destroy = true
   }
