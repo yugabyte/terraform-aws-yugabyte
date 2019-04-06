@@ -71,13 +71,13 @@ do
 done
 
 ###############################################################################
-# Setup PGSQL proxies across all nodes
+# Setup YSQL proxies across all nodes
 ###############################################################################
-echo "Enabling Postgres proxies..."
-TSERVER_PGSQL_PROXY_CMD="echo '--start_pgsql_proxy >> ${YB_HOME}/tserver/conf/server.conf"
+echo "Enabling YSQL..."
+TSERVER_YSQL_PROXY_CMD="echo '--start_pgsql_proxy >> ${YB_HOME}/tserver/conf/server.conf"
 for node in $SSH_IPS
 do
-  ssh -o "StrictHostKeyChecking no" -i ${SSH_KEY_PATH} ${SSH_USER}@$node "$TSERVER_PGSQL_PROXY_CMD ; echo '--pgsql_proxy_bind_address=$node:5433' >> ${YB_HOME}/tserver/server.conf"
+  ssh -o "StrictHostKeyChecking no" -i ${SSH_KEY_PATH} ${SSH_USER}@$node "$TSERVER_YSQL_PROXY_CMD ; echo '--pgsql_proxy_bind_address=$node:5433' >> ${YB_HOME}/tserver/server.conf"
 
 ###############################################################################
 # Start the masters.
@@ -110,9 +110,9 @@ done
 ###############################################################################
 # Run initdb on one of the nodes
 ###############################################################################
-echo "Initializing postgres via initdb..."
+echo "Initializing YSQL via initdb..."
 
-INITDB_CMD="YB_ENABLED_IN_POSTGRES=1 FLAGS_pggate_master_addresses=${YB_MASTER_ADDRESSES} ${YB_HOME}/postgres/bin/initdb -D /tmp/yb_pg_initdb_tmp_data_dir -U postgres >>${YB_HOME}/tserver/postgres.out"
+INITDB_CMD="YB_ENABLED_IN_POSTGRES=1 FLAGS_pggate_master_addresses=${YB_MASTER_ADDRESSES} ${YB_HOME}/postgres/bin/initdb -D /tmp/yb_pg_initdb_tmp_data_dir -U postgres >>${YB_HOME}/tserver/ysql.out"
 ssh -o "StrictHostKeyChecking no" -i ${SSH_KEY_PATH} ${SSH_USER}@${NODES[1]} "$INITDB_CMD"
-echo "Postgres initialization complete."
+echo "YSQL initialization complete."
 
