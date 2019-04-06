@@ -27,6 +27,7 @@
 
 data "aws_ami" "yugabyte_ami" {
   most_recent = true
+  owners      = ["amazon"]
 
   filter {
     name = "name"
