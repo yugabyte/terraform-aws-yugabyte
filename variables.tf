@@ -73,6 +73,17 @@ variable "ssh_key_path" {
   type        = "string"
 }
 
+variable "region_name" {
+  description = "Region name for AWS"
+  default     = "us-east-1"
+  type        = "string"
+}
+
+variable "availability_zones" {
+  description = "List of availability zones to utilize. Example: ['us-west-1a','us-west-1b','us-west-1c']"
+  type        = "list"
+}
+
 variable "subnet_ids" {
   description = "List of subnets to launch the instances in. Example: ['subnet-12345','subnet-98765']."
   type        = "list"

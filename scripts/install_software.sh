@@ -7,7 +7,7 @@
 ###############################################################################
 
 YB_HOME=/home/ec2-user/yugabyte-db
-YB_VERSION=1.2.3.0
+YB_VERSION=1.2.6.0
 YB_PACKAGE_URL="https://downloads.yugabyte.com/yugabyte-ce-${YB_VERSION}-linux.tar.gz"
 
 ###############################################################################
@@ -20,7 +20,35 @@ mkdir -p ${YB_HOME}/tserver
 # Save the current directory.
 pushd ${YB_HOME}
 
+###############################################################################
+# Set appropriate ulimits according to https://docs.yugabyte.com/latest/deploy/manual-deployment/system-config/#setting-ulimits
+###############################################################################
+echo "Setting appropriate YB ulimits.."
 
+cat > /tmp/99-yugabyte-limits.conf <<EOF
+ec2-user	soft 	core	unlimited
+ec2-user	hard	core 	unlimited
+ec2-user  	soft	data	unlimited
+ec2-user	hard	data	unlimited
+ec2-user	soft	priority	0
+ec2-user	hard	priority	0
+ec2-user	soft	fsize	unlimited
+ec2-user	hard	fsize	unlimited
+ec2-user	soft	sigpending	119934
+ec2-user	hard	sigpending	119934
+ec2-user	soft    memlock	64
+ec2-user	hard 	memlock	64
+ec2-user	soft  	nofile	1048576
+ec2-user	hard  	nofile	1048576
+ec2-user	soft	stack	8192
+ec2-user	hard	stack	8192
+ec2-user	soft	rtprio	0
+ec2-user	hard	rtprio	0
+ec2-user	soft	nproc	12000
+ec2-user	hard	nproc	12000
+EOF
+
+sudo mv /tmp/99-yugabyte-limits.conf /etc/security/limits.d/99-yugabyte-limits.conf
 ###############################################################################
 # Download and install the software.
 ###############################################################################
