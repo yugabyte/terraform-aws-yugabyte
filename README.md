@@ -18,8 +18,10 @@ module "yugabyte-db-cluster" {
   ssh_key_path = "SSH_KEY_PATH_HERE"
 
   # The vpc and subnet ids where the nodes should be spawned.
+  region_name = "YOUR VPC REGION"
   vpc_id = "VPC_ID_HERE"
-  subnet_ids = ["SUBNET_ID_HERE"]
+  availability_zones = "AZ_LIST_HERE"
+  subnet_ids = ["SUBNET_ID_LIST_HERE"]
 
   # Replication factor.
   replication_factor = "3"
