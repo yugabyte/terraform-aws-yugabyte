@@ -140,6 +140,7 @@ resource "aws_instance" "yugabyte_nodes" {
   associate_public_ip_address = "${var.associate_public_ip_address}"
   instance_type               = "${var.instance_type}"
   key_name                    = "${var.ssh_keypair}"
+  availability_zone           = "${element(var.availability_zones, count.index)}"
   subnet_id                   = "${element(var.subnet_ids, count.index)}"
   vpc_security_group_ids      = [
     "${aws_security_group.yugabyte.id}",
@@ -177,17 +178,43 @@ resource "aws_instance" "yugabyte_nodes" {
     }
   }
 
+  provisioner "file" {
+    source = "${path.module}/scripts/start_tserver.sh"
+    destination = "/home/ec2-user/start_tserver.sh"
+    connection {
+      type = "ssh"
+      user = "ec2-user"
+      private_key = "${file(var.ssh_key_path)}"
+    }
+  }
+
+  provisioner "file" {
+    source = "${path.module}/scripts/start_master.sh"
+    destination = "/home/ec2-user/start_master.sh"
+    connection {
+      type = "ssh"
+      user = "ec2-user"
+      private_key = "${file(var.ssh_key_path)}"
+    }
+  }
+  
   provisioner "remote-exec" {
     inline = [
       "chmod +x /home/ec2-user/install_software.sh",
       "chmod +x /home/ec2-user/create_universe.sh",
-      "/home/ec2-user/install_software.sh args",
+      "chmod +x /home/ec2-user/start_tserver.sh",
+      "chmod +x /home/ec2-user/start_master.sh",
+      "/home/ec2-user/install_software.sh '${var.yb_edition}' '${var.yb_version}' '${var.yb_download_url}'",
     ]
     connection {
       type = "ssh"
       user = "ec2-user"
       private_key = "${file(var.ssh_key_path)}"
     }
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
@@ -201,6 +228,7 @@ resource "aws_instance" "yugabyte_nodes" {
 locals {
   ssh_ip_list="${var.use_public_ip_for_ssh == "true" ? join(" ", aws_instance.yugabyte_nodes.*.public_ip) : join(" ", aws_instance.yugabyte_nodes.*.private_ip)}"
   config_ip_list="${join(" ", aws_instance.yugabyte_nodes.*.private_ip)}"
+  az_list="${join(" ", aws_instance.yugabyte_nodes.*.availability_zone)}"
 }
 
 resource "null_resource" "create_yugabyte_universe" {
@@ -210,6 +238,6 @@ resource "null_resource" "create_yugabyte_universe" {
 
   provisioner "local-exec" {
     # Bootstrap script called with private_ip of each node in the clutser
-    command = "${path.module}/scripts/create_universe.sh ${var.replication_factor} '${local.config_ip_list}' '${local.ssh_ip_list}' ec2-user ${var.ssh_key_path}"
+    command = "${path.module}/scripts/create_universe.sh 'aws' '${var.region_name}' ${var.replication_factor} '${local.config_ip_list}' '${local.ssh_ip_list}' '${local.az_list}' ec2-user ${var.ssh_key_path}"
   }
 }
