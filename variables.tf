@@ -73,6 +73,17 @@ variable "ssh_key_path" {
   type        = "string"
 }
 
+variable "region_name" {
+  description = "Region name for AWS"
+  default     = "us-east-1"
+  type        = "string"
+}
+
+variable "availability_zones" {
+  description = "List of availability zones to utilize. Example: ['us-west-1a','us-west-1b','us-west-1c']"
+  type        = "list"
+}
+
 variable "subnet_ids" {
   description = "List of subnets to launch the instances in. Example: ['subnet-12345','subnet-98765']."
   type        = "list"
@@ -88,3 +99,22 @@ variable "vpc_id" {
   description = "The VPC ID to create the security groups in."
   type        = "string"
 }
+
+variable "yb_edition" {
+  description = "The edition of YugaByteDB to install"
+  default     = "ce"
+  type        = "string"
+}
+
+variable "yb_download_url" {
+  description = "The download location of the YugaByteDB edition"
+  default     = "https://downloads.yugabyte.com"
+  type        = "string"
+}
+
+variable "yb_version" {
+  description = "The version number of YugaByteDB to install"
+  default     = "1.2.8.0"
+  type        = "string"
+}
+
