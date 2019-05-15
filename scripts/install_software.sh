@@ -7,8 +7,18 @@
 ###############################################################################
 
 YB_HOME=/home/ec2-user/yugabyte-db
-YB_VERSION=1.2.6.0
-YB_PACKAGE_URL="https://downloads.yugabyte.com/yugabyte-ce-${YB_VERSION}-linux.tar.gz"
+if [[ $# -eq 3 ]]; then
+   YB_EDITION=$1
+   YB_VERSION=$2
+   YB_DOWNLOAD_LOCATION=$3
+   if [[ "${YB_EDITION}" == "ce" ]]; then
+      YB_PACKAGE_URL="${YB_DOWNLOAD_LOCATION}/yugabyte-${YB_EDITION}-${YB_VERSION}-linux.tar.gz"
+   fi
+else
+   YB_VERSION=1.2.6.0
+   YB_PACKAGE_URL="https://downloads.yugabyte.com/yugabyte-ce-${YB_VERSION}-linux.tar.gz"
+fi
+YB_PACKAGE_NAME="${YB_PACKAGE_URL##*/}"
 
 ###############################################################################
 # Create the necessary directories.
@@ -48,7 +58,7 @@ ec2-user	soft	nproc	12000
 ec2-user	hard	nproc	12000
 EOF
 
-sudo mv /tmp/99-yugabyte-limits.conf /etc/security/limits.d/99-yugabyte-limits.conf
+sudo cp /tmp/99-yugabyte-limits.conf /etc/security/limits.d/99-yugabyte-limits.conf
 ###############################################################################
 # Download and install the software.
 ###############################################################################
@@ -56,7 +66,7 @@ echo "Fetching package $YB_PACKAGE_URL..."
 wget -q $YB_PACKAGE_URL
 
 echo "Extracting package..."
-tar zxvf yugabyte-ce-${YB_VERSION}-linux.tar.gz > /dev/null
+tar zxvf ${YB_PACKAGE_NAME} > /dev/null
 
 echo "Installing..."
 mv yugabyte-${YB_VERSION} yb-software
@@ -69,9 +79,15 @@ yb-software/yugabyte-${YB_VERSION}/bin/post_install.sh 2>&1 > /dev/null
 pushd master
 for i in ../yb-software/yugabyte-${YB_VERSION}/*
 do
-  ln -s $i > /dev/null
+  YB_TARGET_FILE="${i#../yb-software/yugabyte-${YB_VERSION}/}"
+  if [[ ! -L "${YB_TARGET_FILE}" ]]; then
+     ln -s $i > /dev/null
+  else
+     echo "rm -f ${YB_TARGET_FILE}" >> .master_relink
+     echo "ln -s $i" >> .master_relink
+  fi
 done
-mkdir conf
+mkdir -p conf
 popd
 
 
@@ -81,9 +97,15 @@ popd
 pushd tserver
 for i in ../yb-software/yugabyte-${YB_VERSION}/*
 do
-  ln -s $i > /dev/null
+  YB_TARGET_FILE="${i#../yb-software/yugabyte-${YB_VERSION}/}"
+  if [[ ! -L "${YB_TARGET_FILE}" ]]; then
+     ln -s $i > /dev/null
+  else
+     echo "rm -f ${YB_TARGET_FILE}" >> .tserver_relink
+     echo "ln -s $i" >> .tserver_relink
+  fi
 done
-mkdir conf
+mkdir -p conf
 popd
 
 
@@ -92,8 +114,21 @@ popd
 ###############################################################################
 mkdir -p ${YB_HOME}/data/disk0
 mkdir -p ${YB_HOME}/data/disk1
-echo "--fs_data_dirs=${YB_HOME}/data/disk0,${YB_HOME}/data/disk1" >> master/conf/server.conf
-echo "--fs_data_dirs=${YB_HOME}/data/disk0,${YB_HOME}/data/disk1" >> tserver/conf/server.conf
-
+if [[ ! -f master/conf/server.conf ]]; then
+   echo "--fs_data_dirs=${YB_HOME}/data/disk0,${YB_HOME}/data/disk1" >> master/conf/server.conf
+fi
+if [[ ! -f tserver/conf/server.conf ]]; then
+   echo "--fs_data_dirs=${YB_HOME}/data/disk0,${YB_HOME}/data/disk1" >> tserver/conf/server.conf
+fi
 # Restore the original directory.
 popd
+
+###############################################################################
+# Create an environment file
+###############################################################################
+echo "YB_HOME=${YB_HOME}" >> ${YB_HOME}/.yb_env.sh
+echo "export PATH='$PATH':${YB_HOME}/master/bin:${YB_HOME}/tserver/bin" >> ${YB_HOME}/.yb_env.sh
+echo "export YB_EDITION=${YB_EDITION}" >> ${YB_HOME}/.yb_env.sh
+echo "source ${YB_HOME}/.yb_env.sh" >> /home/ec2-user/.bash_profile
+chmod 755 ${YB_HOME}/.yb_env.sh
+

@@ -99,3 +99,22 @@ variable "vpc_id" {
   description = "The VPC ID to create the security groups in."
   type        = "string"
 }
+
+variable "yb_edition" {
+  description = "The edition of YugaByteDB to install"
+  default     = "ce"
+  type        = "string"
+}
+
+variable "yb_download_url" {
+  description = "The download location of the YugaByteDB edition"
+  default     = "https://downloads.yugabyte.com"
+  type        = "string"
+}
+
+variable "yb_version" {
+  description = "The version number of YugaByteDB to install"
+  default     = "1.2.8.0"
+  type        = "string"
+}
+

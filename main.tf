@@ -178,17 +178,43 @@ resource "aws_instance" "yugabyte_nodes" {
     }
   }
 
+  provisioner "file" {
+    source = "${path.module}/scripts/start_tserver.sh"
+    destination = "/home/ec2-user/start_tserver.sh"
+    connection {
+      type = "ssh"
+      user = "ec2-user"
+      private_key = "${file(var.ssh_key_path)}"
+    }
+  }
+
+  provisioner "file" {
+    source = "${path.module}/scripts/start_master.sh"
+    destination = "/home/ec2-user/start_master.sh"
+    connection {
+      type = "ssh"
+      user = "ec2-user"
+      private_key = "${file(var.ssh_key_path)}"
+    }
+  }
+  
   provisioner "remote-exec" {
     inline = [
       "chmod +x /home/ec2-user/install_software.sh",
       "chmod +x /home/ec2-user/create_universe.sh",
-      "/home/ec2-user/install_software.sh args",
+      "chmod +x /home/ec2-user/start_tserver.sh",
+      "chmod +x /home/ec2-user/start_master.sh",
+      "/home/ec2-user/install_software.sh '${var.yb_edition}' '${var.yb_version}' '${var.yb_download_url}'",
     ]
     connection {
       type = "ssh"
       user = "ec2-user"
       private_key = "${file(var.ssh_key_path)}"
     }
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
