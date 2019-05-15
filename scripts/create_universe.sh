@@ -211,8 +211,12 @@ TSERVER_EXE=${YB_HOME}/tserver/bin/yb-tserver
 TSERVER_OUT=${YB_HOME}/tserver/tserver.out
 TSERVER_ERR=${YB_HOME}/tserver/tserver.err
 TSERVER_START_CMD="nohup ${TSERVER_EXE} --flagfile ${YB_HOME}/tserver/conf/server.conf >>${TSERVER_OUT} 2>>${TSERVER_ERR} </dev/null &"
+echo "Setting LANG and LC_* environment variables on all nodes"
+TSERVER_SET_ENV_CMD="echo -e 'export LC_ALL=en_US.utf-8 \nexport LANG=en_US.utf-8' > ~/env; sudo mv ~/env /etc/environment; sudo chown root:root /etc/environment; sudo chmod 0644 /etc/environment"
+
 for node in $SSH_IPS
 do
+  ssh -o "StrictHostKeyChecking no" -i ${SSH_KEY_PATH} ${SSH_USER}@$node "$TSERVER_SET_ENV_CMD"
   ssh -o "StrictHostKeyChecking no" -i ${SSH_KEY_PATH} ${SSH_USER}@$node "$TSERVER_YB_MASTER_ENV ; $TSERVER_START_CMD"
   TSERVER_CRON_OK="##";
   TSERVER_CRON_OK+=`ssh -o "StrictHostKeyChecking no" -i ${SSH_KEY_PATH} ${SSH_USER}@$node 'crontab -l'`;
@@ -230,7 +234,7 @@ done
 ###############################################################################
 echo "Initializing YSQL on node ${MASTER_ADDR_ARRAY[0]} via initdb..."
 
-INITDB_CMD="YB_ENABLED_IN_POSTGRES=1 FLAGS_pggate_master_addresses=${YB_MASTER_ADDRESSES} ${YB_HOME}/tserver/postgres/bin/initdb -D /tmp/yb_pg_initdb_tmp_data_dir -U postgres >>${YB_HOME}/tserver/ysql.out"
-ssh -o "StrictHostKeyChecking no" -i ${SSH_KEY_PATH} ${SSH_USER}@${SSH_IPS_array[0]} "$INITDB_CMD"
+INITDB_CMD="YB_ENABLED_IN_POSTGRES=1 FLAGS_pggate_master_addresses=${YB_MASTER_ADDRESSES} ${YB_HOME}/tserver/postgres/bin/initdb -D /tmp/yb_pg_initdb_tmp_data_dir --no-locale --encoding=UTF8 -U postgres >>${YB_HOME}/tserver/ysql.out"
+ssh -o "StrictHostKeyChecking no" -i ${SSH_KEY_PATH} ${SSH_USER}@${SSH_IPS_array[1]} "$INITDB_CMD"
 echo "YSQL initialization complete."
 
