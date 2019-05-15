@@ -15,7 +15,7 @@ if [[ $# -eq 3 ]]; then
       YB_PACKAGE_URL="${YB_DOWNLOAD_LOCATION}/yugabyte-${YB_EDITION}-${YB_VERSION}-linux.tar.gz"
    fi
 else
-   YB_VERSION=1.2.6.0
+   YB_VERSION=1.2.8.0
    YB_PACKAGE_URL="https://downloads.yugabyte.com/yugabyte-ce-${YB_VERSION}-linux.tar.gz"
 fi
 YB_PACKAGE_NAME="${YB_PACKAGE_URL##*/}"
