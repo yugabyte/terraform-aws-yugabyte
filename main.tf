@@ -60,36 +60,48 @@ resource "aws_security_group" "yugabyte" {
     from_port = 7000
     to_port   = 7000
     protocol  = "tcp"
-    self      = true
+    cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
     from_port = 9000
     to_port   = 9000
     protocol  = "tcp"
-    self      = true
+    cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
     from_port = 6379
     to_port   = 6379
     protocol  = "tcp"
-    self      = true
+    cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
     from_port = 9042
     to_port   = 9042
     protocol  = "tcp"
-    self      = true
+    cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
     from_port = 5433
     to_port   = 5433
     protocol  = "tcp"
-    self      = true
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port = 22
+    to_port   = 22 
+    protocol  = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port = 5422
+    to_port   = 5422
+    protocol  = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
   lifecycle {
     create_before_destroy = true
   }
-  tags {
+  tags = {
     Name      = "${var.prefix}${var.cluster_name}"
     YugaByte  = "true"
     Service   = "YugaByte"
@@ -120,7 +132,7 @@ resource "aws_security_group" "yugabyte_intra" {
   lifecycle {
     create_before_destroy = true
   }
-  tags {
+  tags = {
     Name      = "${var.prefix}${var.cluster_name}-intra"
     YugaByte  = "true"
     Service   = "YugaByte"
@@ -144,15 +156,14 @@ resource "aws_instance" "yugabyte_nodes" {
   subnet_id                   = "${element(var.subnet_ids, count.index)}"
   vpc_security_group_ids      = [
     "${aws_security_group.yugabyte.id}",
-    "${aws_security_group.yugabyte_intra.id}",
-    "${var.custom_security_group_id}"
+    "${aws_security_group.yugabyte_intra.id}"
   ]
   root_block_device {
     volume_size = "${var.root_volume_size}"
     volume_type = "${var.root_volume_type}"
     iops        = "${var.root_volume_iops}"
   }
-  tags {
+  tags = {
     Name      = "${var.prefix}${var.cluster_name}-n${format("%d", count.index + 1)}"
     YugaByte  = "true"
     Service   = "YugaByte"
@@ -162,6 +173,7 @@ resource "aws_instance" "yugabyte_nodes" {
     source = "${path.module}/scripts/install_software.sh"
     destination = "/home/ec2-user/install_software.sh"
     connection {
+      host = "${self.public_ip}" 
       type = "ssh"
       user = "ec2-user"
       private_key = "${file(var.ssh_key_path)}"
@@ -172,6 +184,7 @@ resource "aws_instance" "yugabyte_nodes" {
     source = "${path.module}/scripts/create_universe.sh"
     destination = "/home/ec2-user/create_universe.sh"
     connection {
+      host = "${self.public_ip}" 
       type = "ssh"
       user = "ec2-user"
       private_key = "${file(var.ssh_key_path)}"
@@ -182,6 +195,7 @@ resource "aws_instance" "yugabyte_nodes" {
     source = "${path.module}/scripts/start_tserver.sh"
     destination = "/home/ec2-user/start_tserver.sh"
     connection {
+      host = "${self.public_ip}" 
       type = "ssh"
       user = "ec2-user"
       private_key = "${file(var.ssh_key_path)}"
@@ -192,6 +206,7 @@ resource "aws_instance" "yugabyte_nodes" {
     source = "${path.module}/scripts/start_master.sh"
     destination = "/home/ec2-user/start_master.sh"
     connection {
+      host = "${self.public_ip}" 
       type = "ssh"
       user = "ec2-user"
       private_key = "${file(var.ssh_key_path)}"
@@ -207,6 +222,7 @@ resource "aws_instance" "yugabyte_nodes" {
       "/home/ec2-user/install_software.sh '${var.yb_edition}' '${var.yb_version}' '${var.yb_download_url}'",
     ]
     connection {
+      host = "${self.public_ip}" 
       type = "ssh"
       user = "ec2-user"
       private_key = "${file(var.ssh_key_path)}"

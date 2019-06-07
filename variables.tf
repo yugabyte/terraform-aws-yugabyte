@@ -29,7 +29,7 @@ variable "instance_type" {
 
 variable "num_instances" {
   description = "Number of instances in the YugaByte cluster."
-  default     = "1"
+  default     = "3"
   type        = "string"
 }
 

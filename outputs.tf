@@ -6,12 +6,12 @@
 
 output "ui" {
   sensitive = false
-  value     = "http://${aws_instance.yugabyte_nodes.*.public_dns[0]}:7000"
+  value     = "http://${aws_instance.yugabyte_nodes.*.public_ip[0]}:7000"
 }
 
 output "hostname" {
   sensitive = false
-  value     = ["${aws_instance.yugabyte_nodes.*.public_dns}"]
+  value     = ["${aws_instance.yugabyte_nodes.*.public_ip}"]
 }
 
 output "ip" {
