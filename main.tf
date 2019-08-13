@@ -7,7 +7,7 @@
 # Required parameters:
 #   cluster_name
 #   ssh_keypair
-#   ssh_key_path
+#   ssh_private_key
 #   subnet_ids
 #   vpc_id
 #
@@ -27,22 +27,23 @@
 
 data "aws_ami" "yugabyte_ami" {
   most_recent = true
-  owners      = ["amazon"]
+  owners      = ["aws-marketplace"]
 
   filter {
     name = "name"
 
     values = [
-      "amzn-ami-hvm-*-x86_64-gp2",
+      "CentOS Linux 7 x86_64 HVM EBS *",
     ]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
   }
 
   filter {
-    name = "owner-alias"
-
-    values = [
-      "amazon",
-    ]
+    name   = "root-device-type"
+    values = ["ebs"]
   }
 }
 
@@ -139,7 +140,6 @@ resource "aws_security_group" "yugabyte_intra" {
   }
 }
 
-
 #########################################################
 #
 # Create the required nodes.
@@ -170,62 +170,64 @@ resource "aws_instance" "yugabyte_nodes" {
   }
 
   provisioner "file" {
-    source = "${path.module}/scripts/install_software.sh"
-    destination = "/home/ec2-user/install_software.sh"
+    source = "${path.module}/utilities/scripts/install_software.sh"
+    destination = "/home/${var.ssh_user}/install_software.sh"
     connection {
       host = "${self.public_ip}" 
       type = "ssh"
-      user = "ec2-user"
-      private_key = "${file(var.ssh_key_path)}"
+      user = "${var.ssh_user}"
+      private_key = "${file(var.ssh_private_key)}"
     }
   }
 
   provisioner "file" {
-    source = "${path.module}/scripts/create_universe.sh"
-    destination = "/home/ec2-user/create_universe.sh"
+    source = "${path.module}/utilities/scripts/create_universe.sh"
+    destination = "/home/${var.ssh_user}/create_universe.sh"
     connection {
       host = "${self.public_ip}" 
       type = "ssh"
-      user = "ec2-user"
-      private_key = "${file(var.ssh_key_path)}"
+      user = "${var.ssh_user}"
+      private_key = "${file(var.ssh_private_key)}"
     }
   }
 
   provisioner "file" {
-    source = "${path.module}/scripts/start_tserver.sh"
-    destination = "/home/ec2-user/start_tserver.sh"
+    source = "${path.module}/utilities/scripts/start_tserver.sh"
+    destination = "/home/${var.ssh_user}/start_tserver.sh"
     connection {
       host = "${self.public_ip}" 
       type = "ssh"
-      user = "ec2-user"
-      private_key = "${file(var.ssh_key_path)}"
+      user = "${var.ssh_user}"
+      private_key = "${file(var.ssh_private_key)}"
     }
   }
 
   provisioner "file" {
-    source = "${path.module}/scripts/start_master.sh"
-    destination = "/home/ec2-user/start_master.sh"
+    source = "${path.module}/utilities/scripts/start_master.sh"
+    destination = "/home/${var.ssh_user}/start_master.sh"
+
     connection {
       host = "${self.public_ip}" 
       type = "ssh"
-      user = "ec2-user"
-      private_key = "${file(var.ssh_key_path)}"
+      user = "${var.ssh_user}"
+      private_key = "${file(var.ssh_private_key)}"
     }
   }
   
   provisioner "remote-exec" {
     inline = [
-      "chmod +x /home/ec2-user/install_software.sh",
-      "chmod +x /home/ec2-user/create_universe.sh",
-      "chmod +x /home/ec2-user/start_tserver.sh",
-      "chmod +x /home/ec2-user/start_master.sh",
-      "/home/ec2-user/install_software.sh '${var.yb_edition}' '${var.yb_version}' '${var.yb_download_url}'",
+      "chmod +x /home/${var.ssh_user}/install_software.sh",
+      "chmod +x /home/${var.ssh_user}/create_universe.sh",
+      "chmod +x /home/${var.ssh_user}/start_tserver.sh",
+      "chmod +x /home/${var.ssh_user}/start_master.sh",
+      "sudo yum install -y wget",
+      "/home/${var.ssh_user}/install_software.sh '${var.yb_version}'",
     ]
     connection {
       host = "${self.public_ip}" 
       type = "ssh"
-      user = "ec2-user"
-      private_key = "${file(var.ssh_key_path)}"
+      user = "${var.ssh_user}"
+      private_key = "${file(var.ssh_private_key)}"
     }
   }
 
@@ -254,6 +256,6 @@ resource "null_resource" "create_yugabyte_universe" {
 
   provisioner "local-exec" {
     # Bootstrap script called with private_ip of each node in the clutser
-    command = "${path.module}/scripts/create_universe.sh 'aws' '${var.region_name}' ${var.replication_factor} '${local.config_ip_list}' '${local.ssh_ip_list}' '${local.az_list}' ec2-user ${var.ssh_key_path}"
+    command = "${path.module}/utilities/scripts/create_universe.sh 'aws' '${var.region_name}' ${var.replication_factor} '${local.config_ip_list}' '${local.ssh_ip_list}' '${local.az_list}' ${var.ssh_user} ${var.ssh_private_key}"
   }
 }

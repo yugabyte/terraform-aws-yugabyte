@@ -35,7 +35,7 @@ variable "num_instances" {
 
 variable "prefix" {
   description = "Prefix prepended to all resources created."
-  default     = "yb-ce-"
+  default     = "yb-"
   type        = "string"
 }
 
@@ -68,14 +68,19 @@ variable "ssh_keypair" {
   type        = "string"
 }
 
-variable "ssh_key_path" {
-  description = "The public key to use when connecting to the instances."
+variable "ssh_private_key" {
+  description = "The private key to use when connecting to the instances."
   type        = "string"
 }
 
+variable "ssh_user" {
+  description = "The public key to use when connecting to the instances."
+  type        = "string"
+  default     = "centos"
+}
+
 variable "region_name" {
-  description = "Region name for AWS"
-  default     = "us-east-1"
+  description = "Region name for AWS. Example: 'us-west-2'"
   type        = "string"
 }
 
@@ -100,12 +105,6 @@ variable "vpc_id" {
   type        = "string"
 }
 
-variable "yb_edition" {
-  description = "The edition of YugaByteDB to install"
-  default     = "ce"
-  type        = "string"
-}
-
 variable "yb_download_url" {
   description = "The download location of the YugaByteDB edition"
   default     = "https://downloads.yugabyte.com"
@@ -114,7 +113,7 @@ variable "yb_download_url" {
 
 variable "yb_version" {
   description = "The version number of YugaByteDB to install"
-  default     = "1.2.8.0"
+  default     = "1.3.0.0"
   type        = "string"
 }
 
