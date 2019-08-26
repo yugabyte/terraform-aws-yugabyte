@@ -250,6 +250,10 @@ locals {
 }
 
 resource "null_resource" "create_yugabyte_universe" {
+  # Define the trigger condition to run the resource block
+  triggers = {
+    cluster_instance_ids = "${join(",", aws_instance.yugabyte_nodes.*.id)}" 
+  }
 
   # Execute after the nodes are provisioned and the software installed.
   depends_on = ["aws_instance.yugabyte_nodes"]
