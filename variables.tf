@@ -113,7 +113,7 @@ variable "yb_download_url" {
 
 variable "yb_version" {
   description = "The version number of YugaByteDB to install"
-  default     = "2.0.5.2"
+  default     = "2.0.6.0"
   type        = "string"
 }
 
