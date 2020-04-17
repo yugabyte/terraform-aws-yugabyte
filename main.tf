@@ -5,6 +5,7 @@
 # creates the necessary machines and configures them.
 #
 # Required parameters:
+#   region
 #   cluster_name
 #   ssh_keypair
 #   ssh_private_key
@@ -24,6 +25,10 @@
 # Choose the most recent Amazon Linux AMI.
 #
 #########################################################
+
+provider "aws" {
+   region = var.region
+}
 
 data "aws_ami" "yugabyte_ami" {
   most_recent = true

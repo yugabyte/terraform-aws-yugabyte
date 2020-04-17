@@ -14,8 +14,8 @@ module "yugabyte-db-cluster" {
   custom_security_group_id="SECURITY_GROUP_HERE"
 
   # AWS key pair.
-  ssh_keypair = "SSH_KEYPAIR_HERE"
-  ssh_key_path = "SSH_KEY_PATH_HERE"
+  ssh_keypair = "SSH_KEYPAIR_NAME_HERE"
+  ssh_private_key = "SSH_PRIVATE_KEY_PATH_HERE"
 
   # The vpc and subnet ids where the nodes should be spawned.
   region_name = "YOUR VPC REGION"
@@ -31,7 +31,7 @@ module "yugabyte-db-cluster" {
 }
 ```
 
-**NOTE:** If you do not have a custom security group, you would need to remove the `${var.custom_security_group_id}` variable in `main.tf`, so that the `aws_instance` looks as follows:
+**NOTE:** If you have a custom security group, you would need to add the `${var.custom_security_group_id}` variable in `main.tf`, so that the `aws_instance` looks as follows:
 
 ```
 resource "aws_instance" "yugabyte_nodes" {
@@ -78,3 +78,40 @@ To destroy what we just created, you can run the following command.
 ```
 $ terraform destroy
 ```
+`Note:- To make any changes in the created cluster you will need the terraform state files. So don't delete state files of Terraform.`
+
+## Test 
+
+### Configurations
+
+#### Prerequisites
+
+- [Terraform **(~> 0.12.5)**](https://www.terraform.io/downloads.html)
+- [Golang **(~> 1.12.10)**](https://golang.org/dl/)
+
+
+#### Environment setup
+
+* Sign Up for AWS.
+* Configure your AWS credentials using one of the supported methods for AWS CLI tools, such as setting the AWS_ACCESS_KEY_ID and 
+  AWS_SECRET_ACCESS_KEY environment variables.
+* Install `dep` dependency management tool for Go.
+    ```sh
+    $ curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+    ```  
+* Change your working directory to the `test` folder.
+* Run `dep` command to get required modules
+    ```sh
+    $ dep ensure
+    ```
+
+#### Run test
+
+Then simply run it in the local shell:
+
+```sh
+$ go test -v -timeout 20m  yugabyte_test.go
+```
+* Note that go has a default test timeout of 10 minutes. With infrastructure testing, your tests will surpass the 10 minutes very easily. To extend the timeout, you can pass in the -timeout option, which takes a go duration string (e.g 10m for 10 minutes or 1h for 1 hour). In the above command, we use the -timeout option to override to a 90 minute timeout.
+* When you hit the timeout, Go automatically exits the test, skipping all cleanup routines. This is problematic for infrastructure testing because it will skip your deferred infrastructure cleanup steps (i.e terraform destroy), leaving behind the infrastructure that was spun up. So it is important to use a longer timeout every time you run the tests.
+

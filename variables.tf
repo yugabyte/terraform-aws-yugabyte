@@ -117,3 +117,9 @@ variable "yb_version" {
   type        = "string"
 }
 
+variable "region" {
+  description = "Region name for AWS in provider. Needed in configuration. Example: 'us-west-2'"
+  type        = "string"
+  default     = "us-east-1"
+}
+
