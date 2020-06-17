@@ -3,9 +3,11 @@ A Terraform module to deploy and run YugaByte on AWS.
 
 ## Config
 
+Save the following content to a terraform configuration file yb.tf
+
 ```
 module "yugabyte-db-cluster" {
-  source = "./terraform-aws-yugabyte"
+  source = ""github.com/YugaByte/terraform-aws-yugabyte"
 
   # The name of the cluster to be created.
   cluster_name = "tf-test"
@@ -13,15 +15,16 @@ module "yugabyte-db-cluster" {
   # A custom security group to be passed so that we can connect to the nodes.
   custom_security_group_id="SECURITY_GROUP_HERE"
 
-  # AWS key pair.
-  ssh_keypair = "SSH_KEYPAIR_HERE"
-  ssh_key_path = "SSH_KEY_PATH_HERE"
+  # Specify an existing AWS key pair
+  # Both the name and the path to the corresponding private key file
+  ssh_keypair = "SSH_KEYPAIR_HERE"     
+  ssh_private_key = "SSH_KEY_PATH_HERE"
 
   # The vpc and subnet ids where the nodes should be spawned.
-  region_name = "YOUR VPC REGION"
+  region_name = "AWS REGION"
   vpc_id = "VPC_ID_HERE"
-  availability_zones = "AZ_LIST_HERE"
-  subnet_ids = ["SUBNET_ID_LIST_HERE"]
+  availability_zones = ["AZ1", "AZ2", "AZ3"]
+  subnet_ids = ["SUBNET_AZ1", SUBNET_AZ2", "SUBNET_AZ3"]
 
   # Replication factor.
   replication_factor = "3"
@@ -29,20 +32,6 @@ module "yugabyte-db-cluster" {
   # The number of nodes in the cluster, this cannot be lower than the replication factor.
   num_instances = "3"
 }
-```
-
-**NOTE:** If you do not have a custom security group, you would need to remove the `${var.custom_security_group_id}` variable in `main.tf`, so that the `aws_instance` looks as follows:
-
-```
-resource "aws_instance" "yugabyte_nodes" {
-  count                       = "${var.num_instances}"
-  ...
-  vpc_security_group_ids      = [
-    "${aws_security_group.yugabyte.id}",
-    "${aws_security_group.yugabyte_intra.id}",
-    "${var.custom_security_group_id}"
-  ]
-
 ```
 
 ## Usage
