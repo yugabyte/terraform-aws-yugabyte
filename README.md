@@ -12,9 +12,6 @@ module "yugabyte-db-cluster" {
   # The name of the cluster to be created.
   cluster_name = "tf-test"
 
-  # A custom security group to be passed so that we can connect to the nodes.
-  custom_security_group_id="SECURITY_GROUP_HERE"
-
   # Specify an existing AWS key pair
   # Both the name and the path to the corresponding private key file
   ssh_keypair = "SSH_KEYPAIR_HERE"     
