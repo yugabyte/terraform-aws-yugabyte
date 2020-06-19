@@ -7,7 +7,7 @@ Save the following content to a terraform configuration file yb.tf
 
 ```
 module "yugabyte-db-cluster" {
-  source = ""github.com/YugaByte/terraform-aws-yugabyte"
+  source = "github.com/YugaByte/terraform-aws-yugabyte"
 
   # The name of the cluster to be created.
   cluster_name = "tf-test"
@@ -64,3 +64,42 @@ To destroy what we just created, you can run the following command.
 ```
 $ terraform destroy
 ```
+`Note:- To make any changes in the created cluster you will need the terraform state files. So don't delete state files of Terraform.`
+
+## Test 
+
+### Configurations
+
+#### Prerequisites
+
+- [Terraform **(~> 0.12.5)**](https://www.terraform.io/downloads.html)
+- [Golang **(~> 1.12.10)**](https://golang.org/dl/)
+
+#### Environment setup
+
+* Sign Up for AWS.
+
+* Configure your AWS credentials using one of the supported methods for AWS CLI tools, such as setting the `AWS_ACCESS_KEY_ID` and 
+  `AWS_SECRET_ACCESS_KEY` environment variables.
+
+* Set the following environment variables.
+  ```sh
+  export SUBNET_IDS="<SUBNET-1>,<SUBNET-2>"
+  export AVAILABILITY_ZONES="<AZ-ZONE-1>,<AZ-ZONE-2>"
+  export VPC_ID=<VPC-ID>
+  export AWS_REGION=<AWS-REGION>
+  export GITHUB_RUN_ID=<RANDOM-ID>
+  export ALLOWED_SOURCES="0.0.0.0/0,<PUBLIC-IP>/32,SG-ID"
+  ```
+
+* Change your working directory to the `test` folder.
+
+#### Run test
+
+Then simply run it in the local shell:
+
+```sh
+$ go test -v -timeout 20m  yugabyte_test.go
+```
+* Note that go has a default test timeout of 10 minutes. With infrastructure testing, your tests will surpass the 10 minutes very easily. To extend the timeout, you can pass in the -timeout option, which takes a go duration string (e.g 10m for 10 minutes or 1h for 1 hour). In the above command, we use the -timeout option to override to a 90 minute timeout.
+* When you hit the timeout, Go automatically exits the test, skipping all cleanup routines. This is problematic for infrastructure testing because it will skip your deferred infrastructure cleanup steps (i.e terraform destroy), leaving behind the infrastructure that was spun up. So it is important to use a longer timeout every time you run the tests.

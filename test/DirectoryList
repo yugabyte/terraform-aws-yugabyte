@@ -1,0 +1,6 @@
+create_universe.sh
+install_software.sh
+start_master.sh
+start_tserver.sh
+yugabyte-db
+
