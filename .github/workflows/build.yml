@@ -35,7 +35,8 @@ jobs:
 
     - name: Public IP
       id: ip
-      uses: haythem/public-ip@v1
+      run: |
+        echo ::set-output name=ipv4::$( curl https://checkip.amazonaws.com/ )
 
     - name: Get dependencies
       run: |
