@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -175,7 +176,7 @@ func testYugaByteSSH(t *testing.T, terraformOptions *terraform.Options, sshSessi
 
 // Verify the YSQL API
 func testYugaByteYSQLSH(t *testing.T, terraformOptions *terraform.Options, privateIP string, sshUser string, sshSession ssh.Host) {
-	commandConnectYSQLSH := fmt.Sprintf("cd /home/%s/yugabyte-db/tserver && ./bin/ysqlsh --echo-queries -h %s -c \\\\conninfo", sshUser, privateIP)
+	commandConnectYSQLSH := fmt.Sprintf("/home/%s/yugabyte-db/tserver/bin/ysqlsh --echo-queries -h %s -c \\\\conninfo", sshUser, privateIP)
 	retry.DoWithRetry(t, "Conecting YSQLSH", maxRetries, timeBetweenRetries, func() (string, error) {
 		output, err := ssh.CheckSshCommandE(t, sshSession, commandConnectYSQLSH)
 		if err != nil {
@@ -188,7 +189,7 @@ func testYugaByteYSQLSH(t *testing.T, terraformOptions *terraform.Options, priva
 
 // Verify the YCQL API
 func testYugaByteCQLSH(t *testing.T, terraformOptions *terraform.Options, privateIP string, sshUser string, sshSession ssh.Host) {
-	commandConnectCQLSH := fmt.Sprintf("cd /home/%s/yugabyte-db/tserver && ./bin/ycqlsh %s 9042 --execute 'SHOW HOST'", sshUser, privateIP)
+	commandConnectCQLSH := fmt.Sprintf("/home/%s/yugabyte-db/tserver/bin/ycqlsh %s 9042 --execute 'SHOW HOST'", sshUser, privateIP)
 	retry.DoWithRetry(t, "Conecting YCQLSH", maxRetries, timeBetweenRetries, func() (string, error) {
 		output, err := ssh.CheckSshCommandE(t, sshSession, commandConnectCQLSH)
 		if err != nil {
@@ -231,6 +232,7 @@ func testYugaByteConf(t *testing.T, terraformOptions *terraform.Options, sshUser
 // Check Tserver process is running or not
 func testYugaByteProcess(t *testing.T, terraformOptions *terraform.Options, sshSession ssh.Host) {
 	// Enhancement - Verify Master Process status
+	// Challenge - Terraform unaware of the nodes which behave as the Master and master process only exists on a subset of the nodes.
 	// checkMasterProcess := "pgrep --list-name 'yb-master'"
 	checkTserverProcess := "pgrep --list-name 'yb-tserver'"
 	retry.DoWithRetry(t, "Checking process ", maxRetries, timeBetweenRetries, func() (string, error) {
@@ -250,6 +252,7 @@ func testYugaByteProcess(t *testing.T, terraformOptions *terraform.Options, sshS
 // Check Tserver logfile exists or not
 func testYugaByteLogFile(t *testing.T, terraformOptions *terraform.Options, sshUser string, sshSession ssh.Host) {
 	// Enhancement - Verify the Master Logfile exists or not
+	// Challenge - Terraform unaware of the nodes which behave as the Master and master log file only exists on a subset of the nodes.
 	// logMasterDir := fmt.Sprintf("/home/%s/yugabyte-db/master/", sshUser)
 	logTserverDir := fmt.Sprintf("/home/%s/yugabyte-db/tserver/", sshUser)
 	retry.DoWithRetry(t, "Checking log files", maxRetries, timeBetweenRetries, func() (string, error) {
@@ -274,7 +277,12 @@ func testYugaByteNodeUlimit(t *testing.T, terraformOptions *terraform.Options, s
 		if err != nil {
 			return "", err
 		}
-		if !strings.Contains(string(output), "119934") && !strings.Contains(string(output), "1048576") && !strings.Contains(string(output), "12000") {
+
+		rePendingSignals := regexp.MustCompile("pending signals.*119934")
+		reOpenFiles := regexp.MustCompile("open files.*1048576")
+		reMaxUserProcess := regexp.MustCompile("max user processes.*12000")
+
+		if !rePendingSignals.MatchString(output) || !reOpenFiles.MatchString(output) || !reMaxUserProcess.MatchString(output) {
 			return "", fmt.Errorf("Output of ulimit -a: %s", output)
 		}
 		return "", nil

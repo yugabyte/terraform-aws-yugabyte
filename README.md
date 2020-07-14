@@ -10,16 +10,19 @@ module "yugabyte-db-cluster" {
   source = "github.com/YugaByte/terraform-aws-yugabyte"
 
   # The name of the cluster to be created.
-  cluster_name = "tf-test"
+  cluster_name = "yb-test"
 
   # Specify an existing AWS key pair
   # Both the name and the path to the corresponding private key file
   ssh_keypair = "SSH_KEYPAIR_HERE"     
   ssh_private_key = "SSH_KEY_PATH_HERE"
 
-  # The vpc and subnet ids where the nodes should be spawned.
+  # The existing vpc and subnet ids where the nodes should be spawned.
   region_name = "AWS REGION"
   vpc_id = "VPC_ID_HERE"
+
+  # Cluster data and metadata will be placed in separate AZs to ensure availability during single AZ failure if 3 AZs are specified.
+  # To tolerate single AZ failure, the AZ count should be equal to RF.
   availability_zones = ["AZ1", "AZ2", "AZ3"]
   subnet_ids = ["SUBNET_AZ1", SUBNET_AZ2", "SUBNET_AZ3"]
 
