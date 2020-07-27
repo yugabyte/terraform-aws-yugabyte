@@ -1,0 +1,59 @@
+name: Build and Test
+
+on:
+  push:
+    paths-ignore:
+      - README.md
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      VPC_ID: ${{ secrets.VPC_ID}}
+      AVAILABILITY_ZONES: ${{ secrets.AVAILABILITY_ZONES}}
+      SUBNET_IDS: ${{ secrets.SUBNET_IDS }} 
+
+    steps:
+    - name: Setup Go 1.13
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.13.5
+      id: go
+
+    - name: Setup Terraform environment
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 0.12.25
+        terraform_wrapper: false
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v1
+      with:
+        submodules: true
+
+    - name: Public IP
+      id: ip
+      run: |
+        echo ::set-output name=ipv4::$( curl https://checkip.amazonaws.com/ )
+
+    - name: Get dependencies
+      run: |
+        cd ./test
+        go mod download
+
+    - name: Setup AWS CLI
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Build
+      env:
+        ALLOWED_SOURCES: "${{ steps.ip.outputs.ipv4 }}/32"
+      run: |
+        cd ./test
+        go test -v -timeout 90m  yugabyte_test.go
+

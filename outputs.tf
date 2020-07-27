@@ -4,19 +4,25 @@
 #
 #########################################################
 
-output "ui" {
+output "master-ui" {
   sensitive = false
   value     = "http://${aws_instance.yugabyte_nodes.*.public_ip[0]}:7000"
 }
 
-output "hostname" {
+output "tserver-ui" {
   sensitive = false
-  value     = ["${aws_instance.yugabyte_nodes.*.public_ip}"]
+  value     = "http://${aws_instance.yugabyte_nodes.*.public_ip[0]}:9000"
 }
 
-output "ip" {
+
+output "public_ips" {
   sensitive = false
-  value     = ["${aws_instance.yugabyte_nodes.*.private_ip}"]
+  value     = "${aws_instance.yugabyte_nodes.*.public_ip}"
+}
+
+output "private_ips" {
+  sensitive = false
+  value     = "${aws_instance.yugabyte_nodes.*.private_ip}"
 }
 
 output "security_group" {

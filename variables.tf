@@ -117,3 +117,8 @@ variable "yb_version" {
   type        = "string"
 }
 
+variable "allowed_sources" {
+  description = "Add Source IP in Security Group to restrict the traffic"
+  type        = "list"
+  default     = ["0.0.0.0/0"]
+}

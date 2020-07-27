@@ -5,6 +5,7 @@
 # creates the necessary machines and configures them.
 #
 # Required parameters:
+#   region_name
 #   cluster_name
 #   ssh_keypair
 #   ssh_private_key
@@ -24,6 +25,10 @@
 # Choose the most recent Amazon Linux AMI.
 #
 #########################################################
+
+provider "aws" {
+   region = var.region_name
+}
 
 data "aws_ami" "yugabyte_ami" {
   most_recent = true
@@ -61,43 +66,43 @@ resource "aws_security_group" "yugabyte" {
     from_port = 7000
     to_port   = 7000
     protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    self      = true
+    cidr_blocks = var.allowed_sources
   }
   ingress {
     from_port = 9000
     to_port   = 9000
     protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    self      = true
+    cidr_blocks = var.allowed_sources
   }
   ingress {
     from_port = 6379
     to_port   = 6379
     protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    self      = true
+    cidr_blocks = var.allowed_sources
   }
   ingress {
     from_port = 9042
     to_port   = 9042
     protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    self      = true
+    cidr_blocks = var.allowed_sources
   }
   ingress {
     from_port = 5433
     to_port   = 5433
     protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    self      = true
+    cidr_blocks = var.allowed_sources
   }
   ingress {
     from_port = 22
     to_port   = 22 
     protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  ingress {
-    from_port = 5422
-    to_port   = 5422
-    protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    self      = true
+    cidr_blocks = var.allowed_sources
   }
   lifecycle {
     create_before_destroy = true
