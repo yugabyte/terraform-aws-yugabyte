@@ -1,0 +1,35 @@
+name: "Update utilities submodule"
+
+on:
+  repository_dispatch:
+    types:
+    - update-submodule
+
+jobs:
+  update-submodule:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: true
+    - name: "Configure git"
+      run: |
+        git config user.name 'YugaByte CI'
+        git config user.email 'yugabyte-ci@users.noreply.github.com'
+    - name: "Update the submodule"
+      run: |
+        git submodule update --remote 
+    - name: "Push the changes"
+      if: ${{ success() }}
+      run: |
+        git status
+        git add utilities
+        git commit -m "Update utilities submodule"
+        git push origin ${{ github.ref }}
+    - name: "Status in case of update submodule failure"
+      if: ${{ failure() }}
+      run: |
+        git status
+        git diff
+        exit 1
