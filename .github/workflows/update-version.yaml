@@ -1,4 +1,4 @@
-name: "Update YugabyteDB version"
+name: "tf-aws: Update YugabyteDB version"
 on:
   repository_dispatch:
     types:

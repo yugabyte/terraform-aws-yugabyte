@@ -1,4 +1,4 @@
-name: "Update utilities submodule"
+name: "tf-aws: Update utilities submodule"
 
 on:
   repository_dispatch:
