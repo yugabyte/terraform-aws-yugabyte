@@ -1,45 +1,74 @@
 # terraform-aws-yugabyte
-A Terraform module to deploy and run YugaByte on AWS.
+A Terraform module to deploy and run YugabyteDB on Amazon Web Services (AWS).
 
-## Config
+## Configuration
 
-Save the following content to a terraform configuration file yb.tf
+* To download and install Terraform, follow the steps given [here](https://www.terraform.io/downloads.html).
 
-```
-module "yugabyte-db-cluster" {
-  source = "github.com/YugaByte/terraform-aws-yugabyte"
+* Export the required credentials in current shell,
+  ```sh
+  export AWS_ACCESS_KEY_ID="AKIAIOSFODNN7EXAMPLE"
+  export AWS_SECRET_ACCESS_KEY="wJal/…/bPxRfiCYEXAMPLEKEY"
+  ```
 
-  # The name of the cluster to be created.
-  cluster_name = "yb-test"
+  For other authentication methods, take a look at the [AWS
+  Provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#authentication)
+  documentation.
 
-  # Specify an existing AWS key pair
-  # Both the name and the path to the corresponding private key file
-  ssh_keypair = "SSH_KEYPAIR_HERE"     
-  ssh_private_key = "SSH_KEY_PATH_HERE"
+* Create a new directory along with a terraform file,
+  ```sh
+  $ mkdir yugabytedb-deploy && cd yugabytedb-deploy
+  $ touch deploy.tf
+  ```
 
-  # The existing vpc and subnet ids where the nodes should be spawned.
-  region_name = "AWS REGION"
-  vpc_id = "VPC_ID_HERE"
+* Open `deploy.tf` in your favorite editor and add following content
+  to it,
+  ```hcl
+  module "yugabyte-db-cluster" {
+	# The source module used for creating clusters on AWS.
+	source = "github.com/yugabyte/terraform-aws-yugabyte"
 
-  # Cluster data and metadata will be placed in separate AZs to ensure availability during single AZ failure if 3 AZs are specified.
-  # To tolerate single AZ failure, the AZ count should be equal to RF.
-  availability_zones = ["AZ1", "AZ2", "AZ3"]
-  subnet_ids = ["SUBNET_AZ1", SUBNET_AZ2", "SUBNET_AZ3"]
+	# The name of the cluster to be created.
+	cluster_name = "yb-test"
 
-  # Replication factor.
-  replication_factor = "3"
+	# Specify an existing AWS key pair
+	# Both the name and the path to the corresponding private key file
+	ssh_keypair = "SSH_KEYPAIR_NAME"
+	ssh_private_key = "PATH_TO_SSH_PRIVATE_KEY_FILE"
 
-  # The number of nodes in the cluster, this cannot be lower than the replication factor.
-  num_instances = "3"
-}
-```
+	# The existing vpc and subnet ids where the nodes should be spawned.
+	region_name = "AWS REGION"
+	vpc_id = "VPC_ID_HERE"
+
+	# Cluster data and metadata will be placed in separate AZs to ensure availability during single AZ failure if 3 AZs are specified.
+	# To tolerate single AZ failure, the AZ count should be equal to RF.
+	availability_zones = ["AZ1", "AZ2", "AZ3"]
+	subnet_ids = ["SUBNET_AZ1", SUBNET_AZ2", "SUBNET_AZ3"]
+
+	# Replication factor.
+	replication_factor = "3"
+
+	# The number of nodes in the cluster, this cannot be lower than the replication factor.
+	num_instances = "3"
+  }
+
+  output "outputs" {
+	value = module.yugabyte-db-cluster
+  }
+  ```
 
 ## Usage
 
-Init terraform first if you have not already done so.
+Initialize Terraform first if you have not already done so.
 
 ```
 $ terraform init
+```
+
+To check what changes are going to happen in the environment run the following,
+
+```
+$ terraform plan
 ```
 
 Now run the following to create the instances and bring up the cluster.
@@ -48,13 +77,13 @@ Now run the following to create the instances and bring up the cluster.
 $ terraform apply
 ```
 
-Once the cluster is created, you can go to the URL `http://<node ip or dns name>:7000` to view the UI. You can find the node's ip or dns by running the following:
+Once the cluster is created, you can go to the URL `http://<node ip or dns name>:7000` to view the YB-Master UI. You can find the node's IP address or DNS by running the following:
 
 ```
-terraform state show aws_instance.yugabyte_nodes[0]
+$ terraform state show module.yugabyte-db-cluster.aws_instance.yugabyte_nodes[0]
 ```
 
-You can access the cluster UI by going to any of the following URLs.
+You can access the YB-Master UI by going to public IP address of any of the instances at port `7000`. The IP address can be viewed by replacing `0` from above command with desired index.
 
 You can check the state of the nodes at any point by running the following command.
 
