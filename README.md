@@ -1,6 +1,6 @@
 [![tf-aws: Build and Test](https://github.com/yugabyte/terraform-aws-yugabyte/workflows/tf-aws:%20Build%20and%20Test/badge.svg)](https://github.com/yugabyte/terraform-aws-yugabyte/actions?query=workflow%3A%22tf-aws%3A+Build+and+Test%22)
-[![tf-aws: Update YugabyteDB version](https://github.com/yugabyte/terraform-aws-yugabyte/workflows/tf-aws:Update%20YugabyteDB%20version/badge.svg)](https://github.com/yugabyte/terraform-aws-yugabyte/actions?query=workflow%3A%22tf-aws%3A+Update+YugabyteDB+version%22)
-[![tf-aws: Update utilities submodule](https://github.com/yugabyte/terraform-aws-yugabyte/workflows/tf-aws:Update%20utilities%20submodule/badge.svg)](https://github.com/yugabyte/terraform-aws-yugabyte/actions?query=workflow%3A%22tf-aws%3A+Update+utilities+submodule%22)
+[![tf-aws: Update YugabyteDB version](https://github.com/yugabyte/terraform-aws-yugabyte/workflows/tf-aws:%20Update%20YugabyteDB%20version/badge.svg)](https://github.com/yugabyte/terraform-aws-yugabyte/actions?query=workflow%3A%22tf-aws%3A+Update+YugabyteDB+version%22)
+[![tf-aws: Update utilities submodule](https://github.com/yugabyte/terraform-aws-yugabyte/workflows/tf-aws:%20Update%20utilities%20submodule/badge.svg)](https://github.com/yugabyte/terraform-aws-yugabyte/actions?query=workflow%3A%22tf-aws%3A+Update+utilities+submodule%22)
 
 # terraform-aws-yugabyte
 A Terraform module to deploy and run YugabyteDB on Amazon Web Services (AWS).
