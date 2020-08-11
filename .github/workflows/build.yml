@@ -1,4 +1,4 @@
-name: Build and Test
+name: "tf-aws: Build and Test"
 
 on:
   push:
