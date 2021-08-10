@@ -24,6 +24,11 @@ output "private_ips" {
   value     = aws_instance.yugabyte_nodes.*.private_ip
 }
 
+output "instance_ids" {
+  sensitive = false
+  value     = aws_instance.yugabyte_nodes.*.id
+}
+
 output "security_group" {
   sensitive = false
   value     = aws_security_group.yugabyte.id
