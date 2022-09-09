@@ -1,4 +1,4 @@
 [submodule "utilities"]
 	path = utilities
-	url = https://github.com/YugaByte/utilities.git
+	url = https://github.com/yugabyte/utilities.git
 	branch = master
