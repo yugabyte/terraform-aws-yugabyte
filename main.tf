@@ -42,7 +42,7 @@ data "aws_ami" "yugabyte_ami" {
     name = "name"
 
     values = [
-      "CentOS Linux 8 x86_64 HVM EBS *",
+      "AlmaLinux OS 8*",
     ]
   }
   filter {
