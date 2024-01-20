@@ -36,7 +36,7 @@ jobs:
     - name: Public IP
       id: ip
       run: |
-        echo ::set-output name=ipv4::$( curl https://checkip.amazonaws.com/ )
+        echo ipv4=$( curl https://checkip.amazonaws.com/ ) >> "$GITHUB_OUTPUT"
 
     - name: Get dependencies
       run: |
