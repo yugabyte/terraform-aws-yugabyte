@@ -17,7 +17,7 @@ jobs:
 
     steps:
     - name: Setup Go 1.13
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v5
       with:
         go-version: 1.13.5
       id: go
@@ -36,7 +36,7 @@ jobs:
     - name: Public IP
       id: ip
       run: |
-        echo echo "ipv4=$( curl https://checkip.amazonaws.com/ )" >> "$GITHUB_ENV"
+        echo "ipv4=$( curl https://checkip.amazonaws.com/ )" >> "$GITHUB_ENV"
 
     - name: Get dependencies
       run: |
