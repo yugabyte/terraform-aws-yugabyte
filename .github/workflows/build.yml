@@ -20,6 +20,7 @@ jobs:
       uses: actions/setup-go@v5
       with:
         go-version: 1.13.5
+        cache: false
       id: go
 
     - name: Setup Terraform environment
