@@ -16,7 +16,7 @@
 #   associate_public_ip_address [default: "true"]
 #   custom_security_group_id
 #   num_instances [default: 3]
-#   
+#
 #
 
 #########################################################
@@ -30,8 +30,11 @@ terraform {
 }
 
 provider "aws" {
-  version = "~> 3.0"
+  # version = "~> 3.0"
   region  = var.region_name
+  default_tags {
+    tags = var.tags
+  }
 }
 
 data "aws_ami" "yugabyte_ami" {
@@ -42,7 +45,7 @@ data "aws_ami" "yugabyte_ami" {
     name = "name"
 
     values = [
-      "CentOS Linux 7 x86_64 HVM EBS *",
+      "AlmaLinux OS 8*",
     ]
   }
   filter {
