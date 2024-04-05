@@ -158,7 +158,7 @@ resource "aws_security_group" "yugabyte_intra" {
 
 resource "aws_instance" "yugabyte_nodes" {
   count                       = var.num_instances
-  ami                         = length(var.aws-ami) == 0 ? data.aws_ami.ami[0].id : var.aws-ami
+  ami                         = length(var.aws-ami) == 0 ? data.aws_ami.yugabyte_ami[0].id : var.aws-ami
   associate_public_ip_address = var.associate_public_ip_address
   instance_type               = var.instance_type
   key_name                    = var.ssh_keypair
