@@ -234,7 +234,7 @@ resource "aws_instance" "yugabyte_nodes" {
       "/home/${var.ssh_user}/install_software.sh '${var.yb_version}'",
     ]
     connection {
-      host        = self.public_ip
+      host        = var.associate_public_ip_address ? self.public_ip : self.private_ip
       type        = "ssh"
       user        = var.ssh_user
       private_key = file(var.ssh_private_key)
