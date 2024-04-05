@@ -38,25 +38,24 @@ provider "aws" {
 }
 
 data "aws_ami" "yugabyte_ami" {
+  count       = length(var.aws-ami) == 0 ? 1 : 0
   most_recent = true
-  owners      = ["aws-marketplace"]
 
   filter {
-    name = "name"
+    name   = "name"
+    values = ["AlmaLinux OS 8.8.*"]
+  }
 
-    values = [
-      "AlmaLinux OS 8*",
-    ]
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
   }
   filter {
-    name   = "architecture"
+    name = "architecture"
     values = ["x86_64"]
   }
 
-  filter {
-    name   = "root-device-type"
-    values = ["ebs"]
-  }
+  owners      = ["aws-marketplace"]
 }
 
 #########################################################
@@ -159,7 +158,7 @@ resource "aws_security_group" "yugabyte_intra" {
 
 resource "aws_instance" "yugabyte_nodes" {
   count                       = var.num_instances
-  ami                         = data.aws_ami.yugabyte_ami.id
+  ami                         = length(var.aws-ami) == 0 ? data.aws_ami.ami[0].id : var.aws-ami
   associate_public_ip_address = var.associate_public_ip_address
   instance_type               = var.instance_type
   key_name                    = var.ssh_keypair
