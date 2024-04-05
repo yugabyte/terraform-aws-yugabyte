@@ -128,3 +128,9 @@ variable "tags" {
   type = map(string)
   default = {}
 }
+
+variable "aws-ami" {
+  type        = string
+  description = "AWS Machine image for vm"
+  default     = ""
+}
