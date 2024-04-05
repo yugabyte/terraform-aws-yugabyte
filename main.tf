@@ -245,6 +245,9 @@ resource "aws_instance" "yugabyte_nodes" {
     create_before_destroy = true
   }
 }
+locals {
+  yugabyte_node_1_ip = var.associate_public_ip_address ? aws_instance.yugabyte_nodes[0].public_ip : aws_instance.yugabyte_nodes[0].private_ip
+}
 
 #########################################################
 #
