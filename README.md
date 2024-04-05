@@ -45,6 +45,7 @@ A Terraform module to deploy and run YugabyteDB on Amazon Web Services (AWS).
     vpc_id = "VPC_ID_HERE"
 
     # Cluster data and metadata will be placed in separate AZs to ensure availability during single AZ failure if 3 AZs are specified.
+    region_name = "REGION"
     # To tolerate single AZ failure, the AZ count should be equal to RF.
     availability_zones = ["AZ1", "AZ2", "AZ3"]
     subnet_ids = ["SUBNET_AZ1", "SUBNET_AZ2", "SUBNET_AZ3"]
