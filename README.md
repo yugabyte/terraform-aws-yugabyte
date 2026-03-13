@@ -40,6 +40,14 @@ A Terraform module to deploy and run YugabyteDB on Amazon Web Services (AWS).
 	ssh_keypair = "SSH_KEYPAIR_NAME"
 	ssh_private_key = "PATH_TO_SSH_PRIVATE_KEY_FILE"
 
+        # The default configuration is to create an instance with public ip and make it accessible to anyone. This can be overridden by reconfiguring the two properties mentioned below
+        use_public_ip_for_ssh = "true"
+        associate_public_ip_address = "true"
+
+
+	# Specify Instance Configuration
+        instance_type = "AWS_INSTANCE_CLASS"
+
 	# The existing vpc and subnet ids where the nodes should be spawned.
 	region_name = "AWS REGION"
 	vpc_id = "VPC_ID_HERE"
