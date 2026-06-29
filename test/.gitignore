@@ -1,0 +1,4 @@
+sshkey.pem
+*.tfstate
+*.tfstate.backup
+
