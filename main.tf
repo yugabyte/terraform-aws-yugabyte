@@ -181,7 +181,7 @@ resource "aws_instance" "yugabyte_nodes" {
     source      = "${path.module}/utilities/scripts/install_software.sh"
     destination = "/home/${var.ssh_user}/install_software.sh"
     connection {
-      host        = self.public_ip
+      host        = var.use_public_ip_for_ssh == "true" ? self.public_ip : self.private_ip
       type        = "ssh"
       user        = var.ssh_user
       private_key = file(var.ssh_private_key)
@@ -192,7 +192,7 @@ resource "aws_instance" "yugabyte_nodes" {
     source      = "${path.module}/utilities/scripts/create_universe.sh"
     destination = "/home/${var.ssh_user}/create_universe.sh"
     connection {
-      host        = self.public_ip
+      host        = var.use_public_ip_for_ssh == "true" ? self.public_ip : self.private_ip
       type        = "ssh"
       user        = var.ssh_user
       private_key = file(var.ssh_private_key)
@@ -203,7 +203,7 @@ resource "aws_instance" "yugabyte_nodes" {
     source      = "${path.module}/utilities/scripts/start_tserver.sh"
     destination = "/home/${var.ssh_user}/start_tserver.sh"
     connection {
-      host        = self.public_ip
+      host        = var.use_public_ip_for_ssh == "true" ? self.public_ip : self.private_ip
       type        = "ssh"
       user        = var.ssh_user
       private_key = file(var.ssh_private_key)
@@ -215,7 +215,7 @@ resource "aws_instance" "yugabyte_nodes" {
     destination = "/home/${var.ssh_user}/start_master.sh"
 
     connection {
-      host        = self.public_ip
+      host        = var.use_public_ip_for_ssh == "true" ? self.public_ip : self.private_ip
       type        = "ssh"
       user        = var.ssh_user
       private_key = file(var.ssh_private_key)
@@ -232,7 +232,7 @@ resource "aws_instance" "yugabyte_nodes" {
       "/home/${var.ssh_user}/install_software.sh '${var.yb_version}'",
     ]
     connection {
-      host        = self.public_ip
+      host        = var.use_public_ip_for_ssh == "true" ? self.public_ip : self.private_ip
       type        = "ssh"
       user        = var.ssh_user
       private_key = file(var.ssh_private_key)
