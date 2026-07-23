@@ -16,7 +16,7 @@
 #   associate_public_ip_address [default: "true"]
 #   custom_security_group_id
 #   num_instances [default: 3]
-#   
+#
 #
 
 #########################################################
@@ -30,30 +30,32 @@ terraform {
 }
 
 provider "aws" {
-  version = "~> 3.0"
+  # version = "~> 3.0"
   region  = var.region_name
+  default_tags {
+    tags = var.tags
+  }
 }
 
 data "aws_ami" "yugabyte_ami" {
+  count       = length(var.aws-ami) == 0 ? 1 : 0
   most_recent = true
-  owners      = ["aws-marketplace"]
 
   filter {
-    name = "name"
+    name   = "name"
+    values = ["AlmaLinux OS 8.8.*"]
+  }
 
-    values = [
-      "CentOS Linux 7 x86_64 HVM EBS *",
-    ]
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
   }
   filter {
-    name   = "architecture"
+    name = "architecture"
     values = ["x86_64"]
   }
 
-  filter {
-    name   = "root-device-type"
-    values = ["ebs"]
-  }
+  owners      = ["aws-marketplace"]
 }
 
 #########################################################
@@ -156,7 +158,7 @@ resource "aws_security_group" "yugabyte_intra" {
 
 resource "aws_instance" "yugabyte_nodes" {
   count                       = var.num_instances
-  ami                         = data.aws_ami.yugabyte_ami.id
+  ami                         = length(var.aws-ami) == 0 ? data.aws_ami.yugabyte_ami[0].id : var.aws-ami
   associate_public_ip_address = var.associate_public_ip_address
   instance_type               = var.instance_type
   key_name                    = var.ssh_keypair
@@ -181,7 +183,7 @@ resource "aws_instance" "yugabyte_nodes" {
     source      = "${path.module}/utilities/scripts/install_software.sh"
     destination = "/home/${var.ssh_user}/install_software.sh"
     connection {
-      host        = self.public_ip
+      host        = var.associate_public_ip_address ? self.public_ip : self.private_ip
       type        = "ssh"
       user        = var.ssh_user
       private_key = file(var.ssh_private_key)
@@ -192,7 +194,7 @@ resource "aws_instance" "yugabyte_nodes" {
     source      = "${path.module}/utilities/scripts/create_universe.sh"
     destination = "/home/${var.ssh_user}/create_universe.sh"
     connection {
-      host        = self.public_ip
+      host        = var.associate_public_ip_address ? self.public_ip : self.private_ip
       type        = "ssh"
       user        = var.ssh_user
       private_key = file(var.ssh_private_key)
@@ -203,7 +205,7 @@ resource "aws_instance" "yugabyte_nodes" {
     source      = "${path.module}/utilities/scripts/start_tserver.sh"
     destination = "/home/${var.ssh_user}/start_tserver.sh"
     connection {
-      host        = self.public_ip
+      host        = var.associate_public_ip_address ? self.public_ip : self.private_ip
       type        = "ssh"
       user        = var.ssh_user
       private_key = file(var.ssh_private_key)
@@ -215,7 +217,7 @@ resource "aws_instance" "yugabyte_nodes" {
     destination = "/home/${var.ssh_user}/start_master.sh"
 
     connection {
-      host        = self.public_ip
+      host        = var.associate_public_ip_address ? self.public_ip : self.private_ip
       type        = "ssh"
       user        = var.ssh_user
       private_key = file(var.ssh_private_key)
@@ -232,7 +234,7 @@ resource "aws_instance" "yugabyte_nodes" {
       "/home/${var.ssh_user}/install_software.sh '${var.yb_version}'",
     ]
     connection {
-      host        = self.public_ip
+      host        = var.associate_public_ip_address ? self.public_ip : self.private_ip
       type        = "ssh"
       user        = var.ssh_user
       private_key = file(var.ssh_private_key)
@@ -242,6 +244,9 @@ resource "aws_instance" "yugabyte_nodes" {
   lifecycle {
     create_before_destroy = true
   }
+}
+locals {
+  yugabyte_node_1_ip = var.associate_public_ip_address ? aws_instance.yugabyte_nodes[0].public_ip : aws_instance.yugabyte_nodes[0].private_ip
 }
 
 #########################################################
