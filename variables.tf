@@ -74,9 +74,9 @@ variable "ssh_private_key" {
 }
 
 variable "ssh_user" {
-  description = "The public key to use when connecting to the instances."
+  description = "SSH User to use when connecting to the instances."
   type        = string
-  default     = "centos"
+  default     = "ec2-user"
 }
 
 variable "region_name" {
@@ -123,3 +123,14 @@ variable "allowed_sources" {
   default     = ["0.0.0.0/0"]
 }
 
+variable "tags" {
+  description = "Resource tags for all resources"
+  type = map(string)
+  default = {}
+}
+
+variable "aws-ami" {
+  type        = string
+  description = "AWS Machine image for vm"
+  default     = ""
+}
