@@ -29,35 +29,36 @@ A Terraform module to deploy and run YugabyteDB on Amazon Web Services (AWS).
   to it,
   ```hcl
   module "yugabyte-db-cluster" {
-	# The source module used for creating clusters on AWS.
-	source = "github.com/yugabyte/terraform-aws-yugabyte"
+    # The source module used for creating clusters on AWS.
+    source = "github.com/yugabyte/terraform-aws-yugabyte"
 
-	# The name of the cluster to be created.
-	cluster_name = "yb-test"
+    # The name of the cluster to be created.
+    cluster_name = "yb-test"
 
-	# Specify an existing AWS key pair
-	# Both the name and the path to the corresponding private key file
-	ssh_keypair = "SSH_KEYPAIR_NAME"
-	ssh_private_key = "PATH_TO_SSH_PRIVATE_KEY_FILE"
+    # Specify an existing AWS key pair
+    # Both the name and the path to the corresponding private key file
+    ssh_keypair = "SSH_KEYPAIR_NAME"
+    ssh_private_key = "PATH_TO_SSH_PRIVATE_KEY_FILE"
 
-	# The existing vpc and subnet ids where the nodes should be spawned.
-	region_name = "AWS REGION"
-	vpc_id = "VPC_ID_HERE"
+    # The existing vpc and subnet ids where the nodes should be spawned.
+    region_name = "AWS REGION"
+    vpc_id = "VPC_ID_HERE"
 
-	# Cluster data and metadata will be placed in separate AZs to ensure availability during single AZ failure if 3 AZs are specified.
-	# To tolerate single AZ failure, the AZ count should be equal to RF.
-	availability_zones = ["AZ1", "AZ2", "AZ3"]
-	subnet_ids = ["SUBNET_AZ1", SUBNET_AZ2", "SUBNET_AZ3"]
+    # Cluster data and metadata will be placed in separate AZs to ensure availability during single AZ failure if 3 AZs are specified.
+    region_name = "REGION"
+    # To tolerate single AZ failure, the AZ count should be equal to RF.
+    availability_zones = ["AZ1", "AZ2", "AZ3"]
+    subnet_ids = ["SUBNET_AZ1", "SUBNET_AZ2", "SUBNET_AZ3"]
 
-	# Replication factor.
-	replication_factor = "3"
+    # Replication factor.
+    replication_factor = "3"
 
-	# The number of nodes in the cluster, this cannot be lower than the replication factor.
-	num_instances = "3"
+    # The number of nodes in the cluster, this cannot be lower than the replication factor.
+    num_instances = "3"
   }
 
   output "outputs" {
-	value = module.yugabyte-db-cluster
+	  value = module.yugabyte-db-cluster
   }
   ```
 
@@ -102,7 +103,7 @@ $ terraform destroy
 ```
 `Note:- To make any changes in the created cluster you will need the terraform state files. So don't delete state files of Terraform.`
 
-## Test 
+## Test
 
 ### Configurations
 
@@ -115,7 +116,7 @@ $ terraform destroy
 
 * Sign Up for AWS.
 
-* Configure your AWS credentials using one of the supported methods for AWS CLI tools, such as setting the `AWS_ACCESS_KEY_ID` and 
+* Configure your AWS credentials using one of the supported methods for AWS CLI tools, such as setting the `AWS_ACCESS_KEY_ID` and
   `AWS_SECRET_ACCESS_KEY` environment variables.
 
 * Set the following environment variables.
